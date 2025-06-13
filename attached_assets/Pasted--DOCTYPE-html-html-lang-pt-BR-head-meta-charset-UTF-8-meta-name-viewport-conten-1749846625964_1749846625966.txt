@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VANTH-X9 “Oblivion Warden”</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-color: #001822;
+      --text-color: #00ffffcc;
+      --header-bg: #003344cc;
+      --btn-bg: #00ffffcc;
+      --btn-color: #002633;
+      --shadow-color: #00ffffcc;
+    }
+    body {
+      margin: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Share Tech Mono', monospace;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header, footer {
+      background: var(--header-bg);
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 0 15px var(--shadow-color);
+    }
+    header h1 {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.5rem;
+      color: var(--btn-bg);
+      text-shadow: 0 0 12px var(--btn-bg);
+    }
+    header p {
+      font-style: italic;
+      margin: 0.3rem 0 0;
+      color: #55ffffaa;
+    }
+    main {
+      flex: 1;
+      padding: 1rem 2rem;
+      max-width: 900px;
+      margin: auto;
+    }
+    section {
+      margin-bottom: 2rem;
+      outline: none;
+    }
+    h2 {
+      font-family: 'Orbitron', sans-serif;
+      border-bottom: 2px solid var(--btn-bg);
+      padding-bottom: 0.3rem;
+      margin-bottom: 1rem;
+      color: var(--btn-bg);
+    }
+    .dimensions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+    .dimension-item {
+      background: #002633cc;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 0 10px var(--btn-bg);
+    }
+    .dimension-item h3 {
+      margin-top: 0;
+      color: var(--btn-bg);
+    }
+    /* Asas animadas */
+    .wing {
+      margin: 0 auto;
+      width: 260px;
+      height: 120px;
+      background: linear-gradient(45deg, #007777, #004444);
+      border-radius: 60px / 30px;
+      box-shadow: 0 0 18px var(--btn-bg);
+      position: relative;
+      cursor: pointer;
+      transition: width 0.5s ease, background 0.5s ease;
+    }
+    .wing::before, .wing::after {
+      content: "";
+      position: absolute;
+      top: 30%;
+      width: 40px;
+      height: 60px;
+      background: #003344cc;
+      border-radius: 30px / 15px;
+      box-shadow: 0 0 10px var(--btn-bg);
+      transition: transform 0.5s ease;
+    }
+    .wing::before {
+      left: 20px;
+      transform-origin: left center;
+    }
+    .wing::after {
+      right: 20px;
+      transform-origin: right center;
+    }
+    .wing.retracted::before {
+      transform: rotate(0deg);
+    }
+    .wing.retracted::after {
+      transform: rotate(0deg);
+    }
+    .wing.extended {
+      width: 420px;
+      background: linear-gradient(45deg, #00bbbb, #007777);
+    }
+    .wing.extended::before {
+      transform: rotate(-45deg);
+    }
+    .wing.extended::after {
+      transform: rotate(45deg);
+    }
+    .wing-instruction {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #00ffffaa;
+      margin-top: 0.4rem;
+    }
+    /* Gallery */
+    .media-gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+    .media-item {
+      background: #002633cc;
+      border-radius: 8px;
+      box-shadow: 0 0 18px var(--btn-bg);
+      padding: 0.5rem;
+      flex: 1 1 280px;
+      max-width: 320px;
+      color: var(--btn-bg);
+      text-align: center;
+      user-select: none;
+    }
+    .media-item img, video, model-viewer {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      display: block;
+      margin-bottom: 0.3rem;
+      box-shadow: 0 0 12px var(--btn-bg);
+    }
+    /* Tooltip */
+    .tooltip {
+      position: relative;
+      cursor: help;
+      border-bottom: 1px dotted var(--btn-bg);
+      outline: none;
+      display: inline-block;
+    }
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 240px;
+      background-color: #001822cc;
+      color: var(--btn-bg);
+      text-align: center;
+      border-radius: 6px;
+      padding: 0.5rem;
+      position: absolute;
+      z-index: 10;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -120px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.9rem;
+      font-family: 'Share Tech Mono', monospace;
+      box-shadow: 0 0 10px var(--btn-bg);
+    }
+    .tooltip:focus .tooltiptext,
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+    /* Mapa tático */
+    #mapCanvas {
+      width: 100%;
+      max-width: 600px;
+      display: block;
+      margin: auto;
+      border-radius: 8px;
+      box-shadow: 0 0 18px var(--btn-bg);
+      background-color: #003344;
+    }
+    /* Logs IA */
+    .ia-log {
+      background: #001822cc;
+      border-radius: 12px;
+      padding: 1rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.9rem;
+      max-height: 200px;
+      overflow-y: auto;
+      color: #00ffccaa;
+      box-shadow: inset 0 0 10px #00ffff55;
+      margin-top: 1rem;
+      white-space: pre-wrap;
+      user-select: text;
+    }
+    /* Contato */
+    #contato img {
+      box-shadow: 0 0 18px var(--btn-bg);
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    #contato img:hover, #contato img:focus {
+      transform: scale(1.05);
+      outline: 2px solid var(--btn-bg);
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 480px;
+      margin: 1rem auto 0;
+    }
+    form label {
+      font-size: 1rem;
+      color: var(--btn-bg);
+      user-select: none;
+    }
+    form input, form textarea {
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      border: none;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1rem;
+      resize: vertical;
+      background-color: #003344cc;
+      color: var(--btn-bg);
+      box-shadow: inset 0 0 6px #00ffff55;
+      transition: background-color 0.3s;
+      min-height: 40px;
+      max-height: 200px;
+    }
+    form input:focus, form textarea:focus {
+      outline: 2px solid var(--btn-bg);
+      background-color: #004455cc;
+    }
+    button.submit-btn {
+      background-color: var(--btn-bg);
+      border: none;
+      color: var(--btn-color);
+      font-weight: 700;
+      font-family: 'Orbitron', sans-serif;
+      padding: 0.7rem 1.5rem;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 0 18px var(--btn-bg);
+      transition: background-color 0.3s;
+    }
+    button.submit-btn:hover, button.submit-btn:focus {
+      background-color: #33ffff;
+      outline: none;
+    }
+    /* Dark Mode */
+    .dark-mode {
+      --bg-color: #0d0d0d;
+      --text-color: #33ffffcc;
+      --header-bg: #002222cc;
+      --btn-bg: #11ffffcc;
+      --btn-color: #001a1a;
+      --shadow-color: #33ffffcc;
+    }
+    /* Botão modo escuro fixo */
+    #darkmode-toggle {
+      position: fixed;
+      bottom: 5rem;
+      right: 1.5rem;
+      background: var(--btn-bg);
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
+      font-size: 1.6rem;
+      color: var(--btn-color);
+      font-weight: 700;
+      z-index: 10000;
+      box-shadow: 0 0 12px var(--btn-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    #darkmode-toggle:hover, #darkmode-toggle:focus {
+      background: #00ffff;
+      color: #002633;
+      outline: none;
+    }
+    /* Chatbot */
+    #chatbot-toggle {
+      position: fixed;
+      bottom: 1rem;
+      right: 1.5rem;
+      background: var(--btn-bg);
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
+      font-size: 1.6rem;
+      color: var(--btn-color);
+      font-weight: 700;
+      z-index: 10000;
+      box-shadow: 0 0 12px var(--btn-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    #chatbot-toggle:hover, #chatbot-toggle:focus {
+      background: #00ffff;
+      color: #002633;
+      outline: none;
+    }
+    #chatbot-container {
+      position: fixed;
+      bottom: 60px;
+      right: 1rem;
+      width: 320px;
+      max-height: 400px;
+      background: var(--header-bg);
+      border-radius: 12px;
+      box-shadow: 0 0 24px var(--btn-bg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--btn-bg);
+      z-index: 10001;
+    }
+    #chatbot-header {
+      background: #004455cc;
+      padding: 0.5rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      font-size: 1rem;
+      user-select: none;
+    }
+    #chatbot-close {
+      background: none;
+      border: none;
+      color: var(--btn-bg);
+      font-size: 1.3rem;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+    #chatbot-close:hover, #chatbot-close:focus {
+      color: #00ffff;
+      outline: none;
+    }
+    #chatbot-messages {
+      flex: 1;
+      padding: 0.5rem 1rem;
+      overflow-y: auto;
+      font-size: 0.85rem;
+      background: #002633cc;
+      scrollbar-width: thin;
+      scrollbar-color: #00ffff #001822;
+    }
+    #chatbot-messages div {
+      margin-bottom: 0.6rem;
+      line-height: 1.3;
+    }
+    #chatbot-form {
+      display: flex;
+      border-top: 1px solid #004455cc;
+      background: #003344cc;
+    }
+    #chatbot-input {
+      flex: 1;
+      padding: 0.5rem 1rem;
+      border: none;
+      background: transparent;
+      color: var(--btn-bg);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1rem;
+      outline: none;
+    }
+    #chatbot-submit {
+      background: var(--btn-bg);
+      border: none;
+      color: var(--btn-color);
+      cursor: pointer;
+      font-weight: 700;
+      font-family: 'Orbitron', sans-serif;
+      padding: 0 1rem;
+      transition: background-color 0.3s;
+    }
+    #chatbot-submit:hover, #chatbot-submit:focus {
+      background-color: #33ffff;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+  <header role="banner">
+    <h1>VANTH-X9 “Oblivion Warden”</h1>
+    <p>Aeronave VTOL Autônoma de Última Geração</p>
+  </header>
+  <main>
+    <section id="introducao" tabindex="0" aria-label="Introdução à aeronave">
+      <h2>Teoria da Criação da Aeronave</h2>
+      <p>
+        O VANTH-X9 “Oblivion Warden” foi projetado para redefinir os parâmetros da aviação autônoma com foco em eficiência, furtividade e adaptabilidade em missões militares e civis. Sua estrutura VTOL (decolagem e pouso vertical) possibilita operações em ambientes urbanos e remotos, com alta capacidade de carga e alcance estendido graças a tecnologias híbridas de propulsão e materiais compósitos ultraleves.
+      </p>
+      <p>
+        Cada componente foi concebido para minimizar a assinatura acústica e térmica, garantindo superioridade em ambientes de combate e vigilância. O design aerodinâmico das asas retráteis, aliado a um sistema avançado de inteligência artificial embarcada, assegura máxima autonomia e resposta rápida a comandos e alterações no campo de missão.
+      </p>
+    </section>
+
+    <section id="dimensoes" tabindex="0" aria-label="Dimensões da aeronave">
+      <h2>Dimensões</h2>
+      <div class="dimensions-grid">
+        <div class="dimension-item" tabindex="0" role="region" aria-label="Comprimento">
+          <h3>Comprimento</h3>
+          <p>6.12 m</p>
+        </div>
+        <div class="dimension-item" tabindex="0" role="region" aria-label="Envergadura">
+          <h3>Envergadura</h3>
+          <p>8.42 m</p>
+        </div>
+        <div class="dimension-item" tabindex="0" role="region" aria-label="Altura">
+          <h3>Altura</h3>
+          <p>2.04 m</p>
+        </div>
+        <div class="dimension-item" tabindex="0" role="region" aria-label="Peso máximo de decolagem">
+          <h3>Peso Máx. Decolagem</h3>
+          <p>1225 kg</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="asas" tabindex="0" aria-label="Asas Retráteis Interativas">
+      <h2>Asas Retráteis</h2>
+      <div id="wing" class="wing retracted" role="button" tabindex="0" aria-pressed="false" aria-label="Asas retraídas, clique para estender">Clique para estender/retrair asas</div>
+      <p class="wing-instruction">Clique ou pressione Enter/Espaço para animar as asas</p>
+    </section>
+
+    <section id="media" tabindex="0" aria-label="Galeria de mídia">
+      <h2>Galeria de Mídia</h2>
+      <div class="media-gallery">
+        <article class="media-item" tabindex="0" aria-label="Imagem da aeronave">
+          <img src="https://via.placeholder.com/320x180?text=Aeronave+Foto" alt="Foto provisória da aeronave VANTH-X9" />
+          <p>Foto Provisória da Aeronave</p>
+        </article>
+        <article class="media-item" tabindex="0" aria-label="Vídeo da aeronave em voo">
+          <video controls muted preload="metadata" aria-describedby="desc-video" poster="https://via.placeholder.com/320x180?text=Vídeo+Provisório">
+            <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm" type="video/webm" />
+            <!-- TODO: Add <source src="path/to/video.mp4" type="video/mp4" /> for compatibility -->
+            Seu navegador não suporta o vídeo.
+          </video>
+          <p id="desc-video">Vídeo Provisório da Aeronave em voo</p>
+        </article>
+        <article class="media-item" tabindex="0" aria-label="Modelo 3D da aeronave">
+          <model-viewer
+            src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+            alt="Modelo 3D provisório da aeronave VANTH-X9"
+            ar
+            ar-modes="webxr scene-viewer quick-look"
+            camera-controls
+            auto-rotate
+            style="width: 100%; height: 240px; border-radius: 8px; background: #001822;"
+            aria-describedby="desc-3d"
+          ></model-viewer>
+          <p id="desc-3d">Modelo 3D Provisório da Aeronave</p>
+          <!-- TODO: Replace with actual VANTH-X9 3D model -->
+        </article>
+      </div>
+    </section>
+
+    <section id="mapa" tabindex="0" aria-label="Mapa tático das rotas">
+      <h2>Mapa Tático</h2>
+      <canvas id="mapCanvas" width="600" height="400" aria-label="Mapa tático das rotas"></canvas>
+    </section>
+
+    <section id="duvidas" tabindex="0" aria-label="Seção de dúvidas">
+      <h2>Dúvidas Frequentes - Chatbot</h2>
+      <p>Use o botão de chat no canto inferior direito para perguntar sobre a aeronave.</p>
+    </section>
+
+    <section id="contato" tabindex="0" aria-label="Contato e direitos autorais">
+      <h2>Contato e Direitos Autorais</h2>
+      <p>Projeto e direitos autorais © Henry Gabriel da Silva Americo</p>
+      <p>Email: <a href="mailto:americo88.h@gmail.com" style="color: var(--btn-bg);">americo88.h@gmail.com</a></p>
+      <p>Telefone: <a href="tel:+5516993028342" style="color: var(--btn-bg);">+55 16 99302-8342</a></p>
+      <form id="contact-form" aria-label="Formulário de contato">
+        <label for="contact-name">Nome:</label>
+        <input type="text" id="contact-name" placeholder="Seu nome" required aria-required="true" />
+        <label for="contact-email">Email:</label>
+        <input type="email" id="contact-email" placeholder="Seu email" required aria-required="true" />
+        <label for="contact-message">Mensagem:</label>
+        <textarea id="contact-message" rows="4" placeholder="Sua mensagem..." required aria-required="true"></textarea>
+        <button type="submit" class="submit-btn">Enviar</button>
+      </form>
+      <p>
+        <label for="foto-henry">Foto de Henry Gabriel:</label><br />
+        <img id="foto-henry" src="https://via.placeholder.com/160x160?text=Sua+Foto" alt="Foto provisória de Henry Gabriel" tabindex="0" />
+      </p>
+    </section>
+  </main>
+  <footer role="contentinfo">
+    <p>Desenvolvido com 💙 por Henry Gabriel da Silva Americo</p>
+  </footer>
+
+  <!-- Botão modo escuro -->
+  <button id="darkmode-toggle" aria-pressed="false" aria-label="Alternar modo escuro" title="Alternar modo escuro">🌙</button>
+
+  <!-- Botão chatbot -->
+  <button id="chatbot-toggle" aria-label="Abrir chatbot" title="Abrir chatbot">💬</button>
+
+  <!-- Chatbot container -->
+  <div id="chatbot-container" hidden aria-live="polite" aria-label="Chatbot de dúvidas">
+    <div id="chatbot-header">
+      <span>Assistente VANTH-X9</span>
+      <button id="chatbot-close" aria-label="Fechar chatbot">×</button>
+    </div>
+    <div id="chatbot-messages" role="log" aria-live="polite" aria-relevant="additions"></div>
+    <form id="chatbot-form" aria-label="Formulário para enviar mensagem ao chatbot">
+      <input type="text" id="chatbot-input" placeholder="Digite sua dúvida aqui..." aria-required="true" autocomplete="off" />
+      <button type="submit" id="chatbot-submit" aria-label="Enviar mensagem">Enviar</button>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js" async></script>
+  <script>
+    // Modo escuro toggle com persistência
+    const darkToggle = document.getElementById('darkmode-toggle');
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark-mode');
+      darkToggle.setAttribute('aria-pressed', 'true');
+      darkToggle.textContent = '☀️';
+    }
+    darkToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark-mode');
+      darkToggle.setAttribute('aria-pressed', isDark);
+      darkToggle.textContent = isDark ? '☀️' : '🌙';
+      localStorage.setItem('darkMode', isDark);
+    });
+
+    // Wing retract/extend animation
+    const wing = document.getElementById('wing');
+    let retracted = true;
+    wing.addEventListener('click', toggleWing);
+    wing.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleWing();
+      }
+    });
+
+    function toggleWing() {
+      retracted = !retracted;
+      wing.classList.toggle('retracted', retracted);
+      wing.classList.toggle('extended', !retracted);
+      wing.setAttribute('aria-pressed', !retracted);
+      wing.setAttribute('aria-label', retracted ? 'Asas retraídas, clique para estender' : 'Asas estendidas, clique para retrair');
+    }
+
+    // Simple tactical map animation with visibility check
+    const canvas = document.getElementById('mapCanvas');
+    const ctx = canvas.getContext('2d');
+    let routes = [
+      {from: {x: 50, y: 350}, to: {x: 300, y: 50}},
+      {from: {x: 100, y: 350}, to: {x: 450, y: 100}},
+      {from: {x: 150, y: 350}, to: {x: 500, y: 300}},
+    ];
+    let progress = 0;
+    let isAnimating = false;
+
+    function drawMap() {
+      if (!isAnimating) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#003344';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = '#00ffff';
+      ctx.lineWidth = 2;
+
+      routes.forEach(route => {
+        ctx.beginPath();
+        ctx.moveTo(route.from.x, route.from.y);
+        let currentX = route.from.x + (route.to.x - route.from.x) * progress;
+        let currentY = route.from.y + (route.to.y - route.from.y) * progress;
+        ctx.lineTo(currentX, currentY);
+        ctx.stroke();
+
+        if (progress >= 1) {
+          ctx.beginPath();
+          ctx.arc(route.to.x, route.to.y, 6, 0, 2 * Math.PI);
+          ctx.fillStyle = '#00ffff';
+          ctx.fill();
+        }
+      });
+
+      progress += 0.005; // Reduced for better performance
+      if (progress > 1) progress = 0;
+      requestAnimationFrame(drawMap);
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !isAnimating) {
+          isAnimating = true;
+          drawMap();
+        } else {
+          isAnimating = false;
+        }
+      });
+    }, { threshold: 0.1 });
+    observer.observe(canvas);
+
+    // Chatbot functionality with improved submission handling
+    const chatbotToggle = document.getElementById('chatbot-toggle');
+    const chatbotContainer = document.getElementById('chatbot-container');
+    const chatbotClose = document.getElementById('chatbot-close');
+    const chatbotForm = document.getElementById('chatbot-form');
+    const chatbotInput = document.getElementById('chatbot-input');
+    const chatbotMessages = document.getElementById('chatbot-messages');
+    let isProcessing = false;
+
+    chatbotToggle.addEventListener('click', () => {
+      chatbotContainer.hidden = false;
+      chatbotInput.focus();
+    });
+    chatbotClose.addEventListener('click', () => {
+      chatbotContainer.hidden = true;
+      chatbotToggle.focus();
+    });
+
+    chatbotForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (isProcessing) return;
+      const userMessage = chatbotInput.value.trim();
+      if (!userMessage) return;
+
+      isProcessing = true;
+      appendMessage('Você', userMessage);
+      chatbotInput.value = '';
+      chatbotInput.disabled = true;
+
+      setTimeout(() => {
+        try {
+          const response = getBotResponse(userMessage.toLowerCase());
+          appendMessage('Assistente VANTH-X9', response);
+        } catch (error) {
+          appendMessage('Assistente VANTH-X9', 'Erro ao processar sua mensagem.');
+        } finally {
+          isProcessing = false;
+          chatbotInput.disabled = false;
+          chatbotInput.focus();
+        }
+      }, 800);
+    });
+
+    function appendMessage(sender, message) {
+      const messageElem = document.createElement('div');
+      const senderText = document.createTextNode(`${sender}: `);
+      const messageText = document.createTextNode(message);
+      messageElem.appendChild(senderText);
+      messageElem.appendChild(messageText);
+      chatbotMessages.appendChild(messageElem);
+      chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }
+
+    function getBotResponse(message) {
+      if (message.includes('peso')) return 'O peso máximo de decolagem do VANTH-X9 é 1225 kg.';
+      if (message.includes('comprimento')) return 'O comprimento da aeronave é 6.12 metros.';
+      if (message.includes('envergadura')) return 'A envergadura é de 8.42 metros.';
+      if (message.includes('altura')) return 'A altura é de 2.04 metros.';
+      if (message.includes('asas')) return 'As asas são retráteis e podem ser estendidas ou retraídas clicando na seção "Asas Retráteis".';
+      if (message.includes('modo escuro') || message.includes('dark mode')) return 'Você pode ativar ou desativar o modo escuro clicando no botão de lua/sol no canto inferior direito.';
+      if (message.includes('vídeo') || message.includes('media')) return 'Na seção "Galeria de Mídia" você pode assistir a vídeos provisórios e ver imagens e modelo 3D da aeronave.';
+      if (message.includes('modelo 3d') || message.includes('3d')) return 'O modelo 3D provisório está disponível na seção "Galeria de Mídia". Você pode rotacionar e visualizar com controles.';
+      return 'Desculpe, não entendi sua dúvida. Por favor, pergunte algo sobre a aeronave.';
+    }
+
+    // Contact form submission
+    const contactForm = document.getElementById('contact-form');
+    contactForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('contact-name').value.trim();
+      const email = document.getElementById('contact-email').value.trim();
+      const message = document.getElementById('contact-message').value.trim();
+      if (!name || !email || !message) return;
+
+      // TODO: Replace with actual backend submission (e.g., Formspree or custom API)
+      alert(`Mensagem enviada por ${name} (${email}): ${message}`);
+      contactForm.reset();
+    });
+  </script>
+</body>
+</html>
